@@ -7,19 +7,15 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+	<link href="static/bootstrap/css/bootstrap.css" rel="stylesheet">
 	<style type="text/css">
 		body { padding-top: 60px; padding-bottom: 40px; }
 	</style>
-	<link href="/static/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+	<link href="static/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 	<!--[if lt IE 9]>
 		<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
 
-	<link rel="shortcut icon" href="/static/bootstrap/images/favicon.ico">
-	<link rel="apple-touch-icon" href="/static/bootstrap/images/apple-touch-icon.png">
-	<link rel="apple-touch-icon" sizes="72x72" href="/static/bootstrap/images/apple-touch-icon-72x72.png">
-	<link rel="apple-touch-icon" sizes="114x114" href="/static/bootstrap/images/apple-touch-icon-114x114.png">
 </head>
 <body>
 
@@ -76,9 +72,9 @@
 	<!-- Le javascript
 	================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="/static/jquery-1.7.2.min.js"></script>
-	<script src="/static/jquery.flot.min.js"></script>
-	<script src="/static/tim-lite.min.js"></script>
+	<script src="static/jquery-1.7.2.min.js"></script>
+	<script src="static/jquery.flot.min.js"></script>
+	<script src="static/tim-lite.min.js"></script>
 	<script>
 	function calculateFreshness(startDate, endDate) {
 		return (Date.parse(endDate)-Date.parse(startDate))/1000
@@ -104,10 +100,10 @@
 	var options = { 
 		series: {
 			shadowSize: 0
-		}
+		},
 		xaxis: { 
 			mode: "time"
-		},
+		}
 
 	};
 
@@ -138,7 +134,7 @@
 				}
 			}
 			if (!plot) {
-						plot = $.plot($('#blogage'), data, );
+						plot = $.plot($('#blogage'), data, options);
 			}
 			plot.setupGrid();
 			plot.setData(data);
