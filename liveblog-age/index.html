@@ -7,19 +7,19 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+	<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
 	<style type="text/css">
 		body { padding-top: 60px; padding-bottom: 40px; }
 	</style>
-	<link href="http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css" rel="stylesheet">
+	<link href="/static/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 	<!--[if lt IE 9]>
 		<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
 
-	<link rel="shortcut icon" href="http://twitter.github.com/bootstrap/assets/images/favicon.ico">
-	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-	<link rel="apple-touch-icon" sizes="72x72" href="http://twitter.github.com/bootstrap/assets/images/apple-touch-icon-72x72.png">
-	<link rel="apple-touch-icon" sizes="114x114" href="http://twitter.github.com/bootstrap/assets/images/apple-touch-icon-114x114.png">
+	<link rel="shortcut icon" href="/static/bootstrap/images/favicon.ico">
+	<link rel="apple-touch-icon" href="/static/bootstrap/images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/static/bootstrap/images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="/static/bootstrap/images/apple-touch-icon-114x114.png">
 </head>
 <body>
 
@@ -76,21 +76,9 @@
 	<!-- Le javascript
 	================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="http://code.jquery.com/jquery.min.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-transition.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-alert.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-modal.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-dropdown.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-scrollspy.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-tab.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-tooltip.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-popover.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-button.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-collapse.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-carousel.js"></script>
-	<script src="https://raw.github.com/twitter/bootstrap/master/js/bootstrap-typeahead.js"></script>
-	<script src="https://github.com/flot/flot/raw/master/jquery.flot.js"></script>
-	<script src="https://github.com/premasagar/tim/raw/master/tim-lite.min.js"></script>
+	<script src="/static/jquery-1.7.2.min.js"></script>
+	<script src="/static/jquery.flot.min.js"></script>
+	<script src="/static/tim-lite.min.js"></script>
 	<script>
 	function calculateFreshness(startDate, endDate) {
 		return (Date.parse(endDate)-Date.parse(startDate))/1000
@@ -112,16 +100,29 @@
 		if (mins > 0) time += mins+" mins and ";
 		return time + timeInSecs+" seconds";
 	}
+
+	var options = { 
+		series: {
+			shadowSize: 0
+		}
+		xaxis: { 
+			mode: "time"
+		},
+
+	};
+
 	function fetchLiveBlogs() {
 		jQuery.getJSON('http://content.guardianapis.com/search?tag=tone/minutebyminute&show-fields=liveBloggingNow,lastModified&use-date=last-modified&callback=?', function(json, textStatus) {
-			
-			var calltime = Date();
+			var data = [];
+			var calltime = new Date();
 			var table = $('#items');
 			for (var i = 0; i != json.response.results.length; i++) {
 				var item = json.response.results[i];
-				if (item.fields.liveBloggingNow) {
+				if (item.fields.liveBloggingNow) {					
 			  		item.refreshTime = calltime;
-					item.age = humanise(calculateFreshness(item.fields.lastModified, item.refreshTime));
+			  		itemage = calculateFreshness(item.fields.lastModified, item.refreshTime)
+			  		if (itemage < 60*60) {
+					item.age = humanise(itemage);
 			  		item.webid = item.id.replace(/\W/gi,'');
 					var template = '<tr id={{webid}}><td>{{id}}</td><td>{{fields.lastModified}}</td><td>{{refreshTime}}</td><td>{{age}}</td>';
 					var jItem = $('#'+item.webid);
@@ -130,9 +131,18 @@
 					} else {
 						$('#'+item.webid).replaceWith(tim(template,item));
 					}
-			  		liveBlogs[item.webid] = item;
+					if (!liveBlogs[item.webid]) liveBlogs[item.webid] = [];
+			  		liveBlogs[item.webid].push([calltime.getTime(),itemage]);
+			  		data.push({label:item.id, data:liveBlogs[item.webid]});
+			  	}
 				}
 			}
+			if (!plot) {
+						plot = $.plot($('#blogage'), data, );
+			}
+			plot.setupGrid();
+			plot.setData(data);
+			plot.draw();
 		});		
 		setTimeout(function() {
 			fetchLiveBlogs();
@@ -140,6 +150,7 @@
 		}, 5000);
 	}
 	var liveBlogs = {};
+	var plot = null;
 	$(document).ready(function($) {
 		fetchLiveBlogs();
 	});
